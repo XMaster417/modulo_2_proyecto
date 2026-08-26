@@ -20,6 +20,25 @@ def read_dataset(dataset, col_names):
     return df
 """
 ================================================================================
+    Funcion: scatter_plot.
+    Toma dos variables y crea una grafia de dispersion (scatter plot) que 
+    imprime en pantalla con los nombres de los ejes y titulo del grafico.
+    
+    @param x -> list: lista con los valores del eje x
+    @param y -> list: lista con los valores del eje y
+    @param xlabel -> String: nombre del eje x
+    @param ylabel -> String: nombre del eje y
+    @param title -> String: titulo del grafico
+================================================================================
+"""
+def scatter_plot(x, y, xlabel, ylabel, title):
+    plt.scatter(x, y)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.show()
+"""
+================================================================================
     Funcion: data_transform.
     Sirve para encontrar resultados como datos nulos, duplicados y cuales pesos
     son iguales a la suma de los demas pesos. Imprime los resultados en consola.
@@ -125,57 +144,47 @@ def EDA(df):
     print("\nVerificar la distribución de la variable sexo:")
     sex_counts = df["Sex"].value_counts()
     sex_percentages = df["Sex"].value_counts(normalize=True) * 100
-
     sex_results = pd.DataFrame({
         "Count": sex_counts,
         "Percentage": sex_percentages
     })
-
     print(sex_results)
-
-    sex_percentages.plot(kind="bar")
-
-    plt.title("Distribución de Sex")
-    plt.xlabel("Sex")
-    plt.ylabel("Cantidad")
-    plt.xticks(rotation=0)
-    plt.show()
 
     ## Verificar las relaciones entre variables.
     ### Relación entre Sexo y Número de Anillos
-    df.plot.scatter(x="Sex", y="Rings")
-    plt.title("Relación entre Sexo y Número de Anillos")
-    plt.xlabel("Sex")
-    plt.ylabel("Rings")
-    plt.show()
+    scatter_plot(
+        df["Sex"], df["Rings"], 
+        "Sexo", "Número de Anillos", 
+        "Relación entre Sexo y Número de Anillos"
+    )
 
     ### Relación entre Longitud y Altura
-    df.plot.scatter(x="Length", y="Height")
-    plt.title("Relación entre Longitud y Altura")
-    plt.xlabel("Length")
-    plt.ylabel("Height")
-    plt.show()
+    scatter_plot(
+        df["Length"], df["Height"], 
+        "Longitud", "Altura", 
+        "Relación entre Longitud y Altura"
+    )
 
     ### Relación entre Altura y Peso Total
-    df.plot.scatter(x="Height", y="Whole weight")
-    plt.title("Relación entre Altura y Peso Total")
-    plt.xlabel("Height")
-    plt.ylabel("Whole weight")
-    plt.show()
+    scatter_plot(
+        df["Height"], df["Whole weight"], 
+        "Altura", "Peso Total", 
+        "Relación entre Altura y Peso Total"
+    )
 
     ### Relación entre Longitud y Peso Total
-    df.plot.scatter(x="Length", y="Whole weight")
-    plt.title("Relación entre Longitud y Peso Total")
-    plt.xlabel("Length")
-    plt.ylabel("Whole weight")
-    plt.show()
+    scatter_plot(
+        df["Length"], df["Whole weight"],
+        "Longitud", "Peso Total",
+        "Relacion entre Longitud y Peso Total"
+    )
 
     ### Relación entre la suma de los pesos parciales y el peso total
-    plt.scatter(sum_weight, df["Whole weight"], alpha=0.5)
-    plt.xlabel("Sum of partial weights")
-    plt.ylabel("Whole weight")
-    plt.title("Whole weight vs sum of partial weights")
-    plt.show()
+    scatter_plot(
+        sum_weight, df["Whole weight"],
+        "Suma de los pesos parciales", "Peso Total",
+        "Peso total vs Suma de los pesos parciales"
+    )
 
     ### Mostrar la distribucion de las diferencias de los pesos en abulones
     plt.hist(df["Weight difference"], bins=100)
