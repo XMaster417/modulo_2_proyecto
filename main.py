@@ -73,6 +73,41 @@ def EDA(df):
     print("\nAnalisis exploratiorio de datos (EDA):")
     print("\nMostrar la informacion del dataset:")
     print(df.info())
+
+    print("\nMostrar las estadisticas del dataset:")
+    print(df.describe())
+
+    ## Se encontró un valor de 0 para altura, verificar si hay más valores de 0
+    ## en columnas para medidas, peso y anillos.
+    print("\nVerificar valores de 0 en columnas de medidas, peso y anillos:")
+
+    columns = [
+        "Length",
+        "Diameter",
+        "Height",
+        "Whole weight",
+        "Shucked weight",
+        "Viscera weight",
+        "Shell weight",
+        "Rings"
+    ]
+
+    zero_counts = (df[columns] == 0).sum()
+    zero_percentages = (df[columns] == 0).mean() * 100
+    zeros_results = pd.DataFrame({
+        "Zero count": zero_counts,
+        "Zero percentage": zero_percentages
+    })
+    print(zeros_results)
+
+    ## Existen solo 0.04% de valores de 0 en la columna de Height, por lo que se
+    ## puede eliminar esos registros.
+    size_before_delete = len(df)
+    df = df[df["Height"] != 0]
+    size_after_delete = len(df)
+    print(f"\nTamaño antes de eliminar: {size_before_delete}")
+    print(f"Tamaño después de eliminar: {size_after_delete}")
+    return df
 """
 ================================================================================
 """
@@ -88,9 +123,7 @@ def main():
     
     dataframe = data_transform(dataframe)
 
-    EDA(dataframe)
-
-
-    
+    dataframe = EDA(dataframe)
+    print(dataframe.head())
 if __name__ == "__main__":
     main()
