@@ -1,6 +1,7 @@
 # Inicializar librerias necesarias.
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 """
 ================================================================================
@@ -73,16 +74,24 @@ def EDA(df):
     )
 
     test_weight = df["Whole weight"] == sum_weight
-    counts = test_weight.value_counts()
-    percentages = counts / len(test_weight) * 100
+    weight_counts = test_weight.value_counts()
+    weight_percentages = weight_counts / len(test_weight) * 100
     
     weight_result = pd.DataFrame({
-        "Count": counts,
-        "Percentage": percentages
+        "Count": weight_counts,
+        "Percentage": weight_percentages
     })
 
     print("\nComparar si el peso total es igual a la suma de los demas pesos:")
     print(weight_result)
+
+    ## Entender mejor las diferencias de pesos.
+    df["Weight difference"] = df["Whole weight"] - sum_weight
+    df["Weight difference percentage"] = (df["Weight difference"] / 
+                                          df["Whole weight"]) * 100
+    print("\nMostrar la diferencia de pesos porcentuales:")
+    print(df["Weight difference percentage"].describe())
+
     print("\nMostrar la informacion del dataset:")
     print(df.info())
 
@@ -113,7 +122,67 @@ def EDA(df):
     print(zeros_results)
 
     ## Verificar la distribución de la variable sexo.
+    print("\nVerificar la distribución de la variable sexo:")
+    sex_counts = df["Sex"].value_counts()
+    sex_percentages = df["Sex"].value_counts(normalize=True) * 100
 
+    sex_results = pd.DataFrame({
+        "Count": sex_counts,
+        "Percentage": sex_percentages
+    })
+
+    print(sex_results)
+
+    sex_percentages.plot(kind="bar")
+
+    plt.title("Distribución de Sex")
+    plt.xlabel("Sex")
+    plt.ylabel("Cantidad")
+    plt.xticks(rotation=0)
+    plt.show()
+
+    ## Verificar las relaciones entre variables.
+    ### Relación entre Sexo y Número de Anillos
+    df.plot.scatter(x="Sex", y="Rings")
+    plt.title("Relación entre Sexo y Número de Anillos")
+    plt.xlabel("Sex")
+    plt.ylabel("Rings")
+    plt.show()
+
+    ### Relación entre Longitud y Altura
+    df.plot.scatter(x="Length", y="Height")
+    plt.title("Relación entre Longitud y Altura")
+    plt.xlabel("Length")
+    plt.ylabel("Height")
+    plt.show()
+
+    ### Relación entre Altura y Peso Total
+    df.plot.scatter(x="Height", y="Whole weight")
+    plt.title("Relación entre Altura y Peso Total")
+    plt.xlabel("Height")
+    plt.ylabel("Whole weight")
+    plt.show()
+
+    ### Relación entre Longitud y Peso Total
+    df.plot.scatter(x="Length", y="Whole weight")
+    plt.title("Relación entre Longitud y Peso Total")
+    plt.xlabel("Length")
+    plt.ylabel("Whole weight")
+    plt.show()
+
+    ### Relación entre la suma de los pesos parciales y el peso total
+    plt.scatter(sum_weight, df["Whole weight"], alpha=0.5)
+    plt.xlabel("Sum of partial weights")
+    plt.ylabel("Whole weight")
+    plt.title("Whole weight vs sum of partial weights")
+    plt.show()
+
+    ### Mostrar la distribucion de las diferencias de los pesos en abulones
+    plt.hist(df["Weight difference"], bins=100)
+    plt.xlabel("Weight difference")
+    plt.ylabel("Frequency")
+    plt.title("Distribution of weight differences")
+    plt.show()
 """
 ================================================================================
 """
