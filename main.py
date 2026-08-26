@@ -28,6 +28,36 @@ def read_dataset(dataset, col_names):
 """
 def data_transform(df):
     print("===================================================================")
+    print("\nProceso de transformación de datos")
+    print("\nEliminar columnas con valores menores o iguales a 0:")
+    ## Existen solo 0.04% de valores de 0 en la columna de Height, por lo que se
+    ## puede eliminar esos registros.
+    size_before_delete = len(df)
+    df = df[df["Height"] != 0]
+    size_after_delete = len(df)
+    print(f"\nTamaño antes de eliminar: {size_before_delete}")
+    print(f"Tamaño después de eliminar: {size_after_delete}")
+
+    ## Convertir la columna de Rings a Age (sumar +1.5)
+    print("\nConvertir la columna de Rings a Age (sumar +1.5):")
+    df["Aproximated age"] = df["Rings"] + 1.5
+    print(df.head())
+
+    ## Separar las columnas de sexo en columnas binarias (one hot encoding)
+    print("\nAplicar one hot encoding a la columna de Sex (M, F, I):")
+    df = pd.get_dummies(df, columns=["Sex"], dtype=int)
+    print(df.head())
+
+    return df
+"""
+================================================================================
+    Funcion: EDA (Exploratory Data Analysis).
+================================================================================
+"""
+def EDA(df):
+    print("===================================================================")
+    print("\nAnalisis exploratiorio de datos (EDA):")
+
     ### Datos nulos
     print("\nMostrar la cantidad de datos nulos:")
     print(df.isna().sum())
@@ -53,24 +83,6 @@ def data_transform(df):
 
     print("\nComparar si el peso total es igual a la suma de los demas pesos:")
     print(weight_result)
-
-    print("\nConvertir la columna de Rings a Age (sumar +1.5):")
-    df["Aproximated age"] = df["Rings"] + 1.5
-    print(df.head())
-
-    print("\nAplicar one hot encoding a la columna de Sex (M, F, I):")
-    df = pd.get_dummies(df, columns=["Sex"])
-    print(df.head())
-
-    return df
-"""
-================================================================================
-    Funcion: EDA (Exploratory Data Analysis).
-================================================================================
-"""
-def EDA(df):
-    print("===================================================================")
-    print("\nAnalisis exploratiorio de datos (EDA):")
     print("\nMostrar la informacion del dataset:")
     print(df.info())
 
@@ -79,7 +91,7 @@ def EDA(df):
 
     ## Se encontró un valor de 0 para altura, verificar si hay más valores de 0
     ## en columnas para medidas, peso y anillos.
-    print("\nVerificar valores de 0 en columnas de medidas, peso y anillos:")
+    print("\nVerificar valores menor o iguales a 0 en las columnas:")
 
     columns = [
         "Length",
@@ -89,10 +101,10 @@ def EDA(df):
         "Shucked weight",
         "Viscera weight",
         "Shell weight",
-        "Rings"
+        "Rings", 
     ]
 
-    zero_counts = (df[columns] == 0).sum()
+    zero_counts = (df[columns] <= 0).sum()
     zero_percentages = (df[columns] == 0).mean() * 100
     zeros_results = pd.DataFrame({
         "Zero count": zero_counts,
@@ -100,14 +112,8 @@ def EDA(df):
     })
     print(zeros_results)
 
-    ## Existen solo 0.04% de valores de 0 en la columna de Height, por lo que se
-    ## puede eliminar esos registros.
-    size_before_delete = len(df)
-    df = df[df["Height"] != 0]
-    size_after_delete = len(df)
-    print(f"\nTamaño antes de eliminar: {size_before_delete}")
-    print(f"Tamaño después de eliminar: {size_after_delete}")
-    return df
+    ## Verificar la distribución de la variable sexo.
+
 """
 ================================================================================
 """
@@ -120,10 +126,10 @@ def main():
     ]
     dataframe = read_dataset("abalone.data", column_names)
     print(dataframe.head())
-    
+
+    EDA(dataframe)
+
     dataframe = data_transform(dataframe)
 
-    dataframe = EDA(dataframe)
-    print(dataframe.head())
 if __name__ == "__main__":
     main()
