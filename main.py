@@ -205,7 +205,8 @@ def main():
     dataframe = read_dataset("abalone.data", column_names)
     print(dataframe.head())
 
-    EDA(dataframe)
+    ## Manda una copia para no "manchar" el dataset original
+    EDA(dataframe.copy())
 
     dataframe = data_transform(dataframe)
 
