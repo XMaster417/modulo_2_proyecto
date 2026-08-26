@@ -192,6 +192,52 @@ def EDA(df):
     plt.ylabel("Frequency")
     plt.title("Distribution of weight differences")
     plt.show()
+
+    ### Relacion entre diametro y altura
+    scatter_plot(
+        df["Diameter"], df["Height"],
+        "Diametro", "Altura",
+        "Relacion entre el diametro y la altura"
+    )
+
+    ### Relacion entre diametro y longitud
+    scatter_plot(
+        df["Diameter"], df["Length"],
+        "Diametro", "Longitud",
+        "Relación entre el diametro y la longitud"
+    )
+
+    ### Relacion entre diametro y peso total.
+    scatter_plot(
+        df["Diameter"], df["Whole weight"],
+        "Diametro", "Peso Total",
+        "Relación entre el diametro y el peso total"
+    )
+
+    ### Relacion entre diametro y sexo
+    scatter_plot(
+        df["Sex"], df["Diameter"],
+        "Sexo", "Diametro",
+        "Relación entre Sexo y Diametro"
+    )
+
+    ### Relacion entre diametro y numero de anillos
+    scatter_plot(
+        df["Diameter"], df["Rings"],
+        "Diametro", "Anillos",
+        "Relación entre diametro y número de anillos"
+    )
+
+    ## Encontrar valores atipicos
+    ### Valores atipicos de la variable de Altura.
+    height_outliers = df.loc[df["Height"] > 0.5]
+    print("\nValores atipicos cuya altura supera 0.5:")
+    print(height_outliers.head())
+
+    ### Valores cuya suma de pesos es negativa (superan al peso total)
+    negative_weight_difference = df.loc[df["Weight difference"] < 0]
+    print("\nValores cuya suma de pesos parciales supera al peso total:")
+    print(negative_weight_difference.head())
 """
 ================================================================================
 """
