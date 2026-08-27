@@ -58,11 +58,6 @@ def data_transform(df):
     print(f"\nTamaño antes de eliminar: {size_before_delete}")
     print(f"Tamaño después de eliminar: {size_after_delete}")
 
-    ## Convertir la columna de Rings a Age (sumar +1.5)
-    print("\nConvertir la columna de Rings a Age (sumar +1.5):")
-    df["Aproximated age"] = df["Rings"] + 1.5
-    print(df.head())
-
     ## Separar las columnas de sexo en columnas binarias (one hot encoding)
     print("\nAplicar one hot encoding a la columna de Sex (M, F, I):")
     df = pd.get_dummies(df, columns=["Sex"], dtype=int)
@@ -85,16 +80,21 @@ def EDA(df):
     ### Datos duplicados
     print("\nMostrar los elementos duplicados: ", df.duplicated().sum())
 
-    ### Calular si el peso total es la suma de las columnas restantes de peso
-    sum_weight = (
-        df["Shucked weight"] +
-        df["Viscera weight"] + 
-        df["Shell weight"]
+    ### Calcular la diferencia entre el peso total y los pesos restantes
+    df["Weight difference"] = (
+        df["Whole weight"]
+        - df["Shucked weight"]
+        - df["Viscera weight"]
+        - df["Shell weight"]
     )
 
-    test_weight = df["Whole weight"] == sum_weight
+    ### Verificar si el peso total es igual a la suma de los demas pesos
+    test_weight = pd.Series(
+        np.isclose(df["Weight difference"], 0),
+        index=df.index
+    )
     weight_counts = test_weight.value_counts()
-    weight_percentages = weight_counts / len(test_weight) * 100
+    weight_percentages = weight_counts / len(df) * 100
     
     weight_result = pd.DataFrame({
         "Count": weight_counts,
@@ -105,7 +105,6 @@ def EDA(df):
     print(weight_result)
 
     ## Entender mejor las diferencias de pesos.
-    df["Weight difference"] = df["Whole weight"] - sum_weight
     df["Weight difference percentage"] = (df["Weight difference"] / 
                                           df["Whole weight"]) * 100
     print("\nMostrar la diferencia de pesos porcentuales:")
@@ -181,16 +180,17 @@ def EDA(df):
 
     ### Relación entre la suma de los pesos parciales y el peso total
     scatter_plot(
-        sum_weight, df["Whole weight"],
+        df["Whole weight"] - df["Weight difference"], # Pesos restantes
+        df["Whole weight"],
         "Suma de los pesos parciales", "Peso Total",
         "Peso total vs Suma de los pesos parciales"
     )
 
     ### Mostrar la distribucion de las diferencias de los pesos en abulones
     plt.hist(df["Weight difference"], bins=100)
-    plt.xlabel("Weight difference")
-    plt.ylabel("Frequency")
-    plt.title("Distribution of weight differences")
+    plt.xlabel("Diferencia de pesos")
+    plt.ylabel("Frecuencia")
+    plt.title("Distribución de la diferencia entre peso total y suma de pesos")
     plt.show()
 
     ### Relacion entre diametro y altura
@@ -202,9 +202,9 @@ def EDA(df):
 
     ### Relacion entre diametro y longitud
     scatter_plot(
-        df["Diameter"], df["Length"],
-        "Diametro", "Longitud",
-        "Relación entre el diametro y la longitud"
+        df["Length"], df["Diameter"],
+        "Longitud", "Diametro",
+        "Relación entre la longitud y el diametro"
     )
 
     ### Relacion entre diametro y peso total.
@@ -230,14 +230,100 @@ def EDA(df):
 
     ## Encontrar valores atipicos
     ### Valores atipicos de la variable de Altura.
-    height_outliers = df.loc[df["Height"] > 0.5]
+    height_counts = (df[["Height"]] > 0.5).sum()
+    height_percentages = (df[["Height"]] > 0.5).mean() * 100
+    height_outlier_results = pd.DataFrame({
+        "Count": height_counts,
+        "Percentage": height_percentages
+    })
+
     print("\nValores atipicos cuya altura supera 0.5:")
-    print(height_outliers.head())
+    print(height_outlier_results)
+
+    ### Valores atipicos del diametro y longitud
+    diameter_outliers = df[["Diameter"]].gt(df["Length"], axis="index")
+    diameter_counts = diameter_outliers.sum()
+    diameter_percentages = diameter_outliers.mean() * 100
+    diameter_outlier_results = pd.DataFrame({
+        "Count": diameter_counts,
+        "Percentage": diameter_percentages
+    })
+    print("\nValores atipicos con diametro mayor a longitud")
+    print(diameter_outlier_results)
 
     ### Valores cuya suma de pesos es negativa (superan al peso total)
-    negative_weight_difference = df.loc[df["Weight difference"] < 0]
-    print("\nValores cuya suma de pesos parciales supera al peso total:")
-    print(negative_weight_difference.head())
+    negative_weight_counts = (df[["Weight difference"]] < 0).sum()
+    negative_weight_percentages = (df[["Weight difference"]] < 0).mean() * 100
+    negative_weight_outlier_results = pd.DataFrame({
+        "Count": negative_weight_counts,
+        "Percentage": negative_weight_percentages
+    })
+
+    print("\nValores atipicos cuya diferencia de pesos es negativa:")
+    print(negative_weight_outlier_results)
+
+    ## Calcular las estadisticas de las diferencias de pesos negativas
+    negative_weight_difference = df.loc[
+        df["Weight difference"] < 0,
+        ["Weight difference", "Weight difference percentage"]
+    ]
+    print("\nEstadisticas descriptivas de las diferencias negativas:")
+    print(negative_weight_difference.describe())
+
+    ## Separar las diferencias negativas por su magnitud porcentual
+    negative_percentage = negative_weight_difference[
+        "Weight difference percentage"
+    ]
+
+    negative_below_5 = negative_weight_difference.loc[
+        negative_percentage >= -5
+    ]
+    negative_between_5_and_10 = negative_weight_difference.loc[
+        (negative_percentage < -5) & (negative_percentage >= -10)
+    ]
+    negative_between_10_and_25 = negative_weight_difference.loc[
+        (negative_percentage < -10) & (negative_percentage >= -25)
+    ]
+    negative_above_25 = negative_weight_difference.loc[
+        negative_percentage < -25
+    ]
+
+    print("\nDiferencias negativas de hasta 5%:")
+    print(negative_below_5.head())
+
+    print("\nDiferencias negativas mayores a 5% y de hasta 10%:")
+    print(negative_between_5_and_10.head())
+
+    print("\nDiferencias negativas mayores a 10% y de hasta 25%:")
+    print(negative_between_10_and_25.head())
+
+    print("\nDiferencias negativas mayores a 25%:")
+    print(negative_above_25.head())
+
+    ## Resumir las diferencias negativas por rangos porcentuales
+    negative_percentage_magnitude = negative_percentage.abs()
+
+    negative_0_to_10_count = negative_percentage_magnitude.le(10).sum()
+    negative_above_10_to_100_count = (
+        (negative_percentage_magnitude > 10)
+        & (negative_percentage_magnitude <= 100)
+    ).sum()
+
+    negative_ranges_summary = pd.DataFrame({
+        "Range": ["0% - 10%", ">10% - 100%"],
+        "Count": [
+            negative_0_to_10_count,
+            negative_above_10_to_100_count
+        ],
+        "Percentage of dataset": [
+            negative_0_to_10_count / len(df) * 100,
+            negative_above_10_to_100_count / len(df) * 100
+        ]
+    })
+
+    print("\nResumen de diferencias negativas por rango:")
+    print(negative_ranges_summary)
+
 """
 ================================================================================
 """
