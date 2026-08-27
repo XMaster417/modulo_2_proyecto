@@ -54,9 +54,9 @@ def data_transform(df):
     ## puede eliminar esos registros.
     size_before_delete = len(df)
     print(f"\nTamaño antes de eliminar: {size_before_delete}")
-    height_not_zero = df["Height"] != 0
+    height_zero = df["Height"] == 0
     df = df[df["Height"] != 0]
-    print(f"\nRegistros eliminados por altura de 0: {height_not_zero.sum()}")
+    print(f"\nRegistros eliminados por altura de 0: {height_zero.sum()}")
     
     ## Eliminar observaciones cuya altura sea mayor a 0.5.
     height_outliers = df["Height"] >= 0.5
@@ -92,10 +92,21 @@ def data_transform(df):
     size_after_delete = len(df)
     print(f"Tamaño después de eliminar: {size_after_delete}")
 
-    ## Separar las columnas de sexo en columnas binarias (one hot encoding)
-    print("\nAplicar one hot encoding a la columna de Sex (M, F, I):")
+    ## Mostrar las estadísticas descriptivas de los datos transformados.
+    print("\nEstadísticas descriptivas de los datos transformados:")
+    print(df.describe())
+
+    ## Mostrar la distribución final de la variable a predecir.
+    sex_distribution = pd.DataFrame({
+        "Count": df["Sex"].value_counts(),
+        "Percentage": df["Sex"].value_counts(normalize=True) * 100
+    })
+    sex_distribution.index.name = "Sex"
+    print("\nDistribución variable Sex:")
+    print(sex_distribution)
+
+    ## Aplicar one hot encoding para la variable de Sex
     df = pd.get_dummies(df, columns=["Sex"], dtype=int)
-    print(df.head())
 
     return df
 """
