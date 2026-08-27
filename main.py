@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
     Sirve para recivir un archivo (generalmente .data o .csv, pero acepta otros 
     formatos), tambien recibe los nombres de columnas para los datasets que 
     los tienen en un archivo aparte.
-    
+
     @param dataset -> file: archivo con el dataset a cargar
     @param col_names -> list<String>: lista con los nombres de las columnas
     @return df -> dataFrame: dataframe de pandas con la informacion del dataset
@@ -23,7 +23,7 @@ def read_dataset(dataset, col_names):
     Funcion: scatter_plot.
     Toma dos variables y crea una grafia de dispersion (scatter plot) que 
     imprime en pantalla con los nombres de los ejes y titulo del grafico.
-    
+
     @param x -> list: lista con los valores del eje x
     @param y -> list: lista con los valores del eje y
     @param xlabel -> String: nombre del eje x
@@ -49,13 +49,47 @@ def scatter_plot(x, y, xlabel, ylabel, title):
 def data_transform(df):
     print("===================================================================")
     print("\nProceso de transformación de datos")
-    print("\nEliminar columnas con valores menores o iguales a 0:")
+    print("\nEliminar registros con valores inválidos o atípicos:")
     ## Existen solo 0.04% de valores de 0 en la columna de Height, por lo que se
     ## puede eliminar esos registros.
     size_before_delete = len(df)
-    df = df[df["Height"] != 0]
-    size_after_delete = len(df)
     print(f"\nTamaño antes de eliminar: {size_before_delete}")
+    height_not_zero = df["Height"] != 0
+    df = df[df["Height"] != 0]
+    print(f"\nRegistros eliminados por altura de 0: {height_not_zero.sum()}")
+    
+    ## Eliminar observaciones cuya altura sea mayor a 0.5.
+    height_outliers = df["Height"] >= 0.5
+    df = df[df["Height"] <= 0.5]
+    print(f"Registros eliminados por altura mayor a 0.5: {height_outliers.sum()}")
+    
+    ## El diámetro de un abulón no puede ser mayor que su longitud.
+    diameter_outliers = df["Diameter"] > df["Length"]
+    df = df[df["Diameter"] <= df["Length"]]
+    print(
+        "Registros eliminados por diámetro mayor a la longitud: "
+        f"{diameter_outliers.sum()}"
+    )
+    ## Eliminar las diferencias porcentuales de peso negativas mayores al 10%
+    weight_difference = (
+        df["Whole weight"]
+        - df["Shucked weight"]
+        - df["Viscera weight"]
+        - df["Shell weight"]
+    )
+    weight_difference_percentage = (
+        weight_difference / df["Whole weight"] * 100
+    )
+    negative_weight_outliers = weight_difference_percentage < -10
+    df = df[weight_difference_percentage > -10]
+
+    print(
+        "Registros eliminados por diferencia negativa de peso mayor a 10%: "
+        f"{negative_weight_outliers.sum()}"
+    )
+    
+
+    size_after_delete = len(df)
     print(f"Tamaño después de eliminar: {size_after_delete}")
 
     ## Separar las columnas de sexo en columnas binarias (one hot encoding)
@@ -294,7 +328,7 @@ def EDA(df):
     print("\nDiferencias negativas mayores a 5% y de hasta 10%:")
     print(negative_between_5_and_10.head())
 
-    print("\nDiferencias negativas mayores a 10% y de hasta 25%:")
+    print("\nDiferencias negativas mayores a 1% y de hasta 25%:")
     print(negative_between_10_and_25.head())
 
     print("\nDiferencias negativas mayores a 25%:")
@@ -304,20 +338,17 @@ def EDA(df):
     negative_percentage_magnitude = negative_percentage.abs()
 
     negative_0_to_10_count = negative_percentage_magnitude.le(10).sum()
-    negative_above_10_to_100_count = (
-        (negative_percentage_magnitude > 10)
-        & (negative_percentage_magnitude <= 100)
-    ).sum()
+    negative_above_10_count = (negative_percentage_magnitude > 10).sum()
 
     negative_ranges_summary = pd.DataFrame({
-        "Range": ["0% - 10%", ">10% - 100%"],
+        "Range": ["0% - 10%", ">10%"],
         "Count": [
             negative_0_to_10_count,
-            negative_above_10_to_100_count
+            negative_above_10_count
         ],
         "Percentage of dataset": [
             negative_0_to_10_count / len(df) * 100,
-            negative_above_10_to_100_count / len(df) * 100
+            negative_above_10_count / len(df) * 100
         ]
     })
 
