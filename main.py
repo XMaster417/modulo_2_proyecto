@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 """
 ================================================================================
@@ -369,6 +370,29 @@ def EDA(df):
 """
 ================================================================================
 """
+def correlation_analysis(df):
+    print("===================================================================")
+    print("\nAnálisis de correlación y análisis multivariable")
+
+    ## Crear el heatmap con todas las variables numéricas, incluidas las
+    ## columnas Sex_F, Sex_I y Sex_M generadas mediante one-hot encoding.
+    correlation_matrix = df.corr(numeric_only=True)
+
+    plt.figure(figsize=(13, 10))
+    sns.heatmap(
+        correlation_matrix,
+        annot=True,
+        fmt=".2f",
+        cmap="coolwarm",
+        center=0,
+        vmin=-1,
+        vmax=1,
+        linewidths=0.5
+    )
+    plt.title("Heatmap de correlación de las variables")
+    plt.tight_layout()
+    plt.show()
+
 def main():
     ## Extraer los datos.
     column_names = [
@@ -383,6 +407,8 @@ def main():
     EDA(dataframe.copy())
 
     dataframe = data_transform(dataframe)
+
+    correlation_analysis(dataframe)
 
 if __name__ == "__main__":
     main()
