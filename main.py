@@ -558,7 +558,7 @@ def confusion_matrix(y_true, y_hat, class_names):
 
 ================================================================================
 """
-def logistic_regression_analysis(df, epochs=10000, learning_rate=0.001):
+def logistic_regression_analysis(df, epochs=5000, learning_rate=0.001):
     class_names = ["I", "M", "F"]
     target_columns = ["Sex_I", "Sex_M", "Sex_F"]
     feature_columns = [
